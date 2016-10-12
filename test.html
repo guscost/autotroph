@@ -51,10 +51,14 @@ var addWidget = function (name) {
 
 // component to render a list of widgets
 var WidgetList = function (props) {
-  return el('div', { style: { 'color': 'gray' } },
+  return el('div', { style: { color: 'gray' } },
     props.widgets.map(function (widget, index) {
       return el('div', {
-        key: widget.id
+        key: widget.id,
+        style: {
+          padding: '5px 10px',
+          backgroundColor: index%2 ? '#fff' : '#eee'
+        }
       },
         widget.name,
         ': $',
@@ -68,18 +72,20 @@ var WidgetList = function (props) {
 var App = function (props) {
   return el('div', null,
     el('h4', null, 'SimpleFlux Test Page'),
-    el('input', {
-      value: props.widgetNameInput,
-      onChange: function (event) {
-        updateWidgetName(event.target.value);
-      }
-    }),
-    el('button', {
-      onClick: function () {
-        addWidget(props.widgetNameInput);
-        updateWidgetName('');
-      }
-    }, 'Add'),
+    el('p', null,
+      el('input', {
+        value: props.widgetNameInput,
+        onChange: function (event) {
+          updateWidgetName(event.target.value);
+        }
+      }),
+      el('button', {
+        onClick: function () {
+          addWidget(props.widgetNameInput);
+          updateWidgetName('');
+        }
+      }, 'Add')
+    ),
     el(WidgetList, { widgets: props.widgets })
   );
 };
