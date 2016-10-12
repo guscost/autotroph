@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SimpleFlux Test Page</title>
+  </head>
+  <body>
+    <div id="page" style="width: 960px; margin: 0 auto; font-family: sans-serif;">
+      <div id="react-mount"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.min.js"></script>
+    <script src="https://raw.githubusercontent.com/guscost/simple-flux/master/sf.js"></script>
+    <script>
+
+var el = React.createElement;
+
+// my store :)
+var myStore = sf.createStore({
+  widgets: [],
+  widgetName: ''
+}, function (state, action) {
+  switch (action.type) {
+    case 'UPDATE_WIDGET_NAME':
+      state.widgetName = action.widgetName;
+      return true;
+    case 'ADD_WIDGET':
+      state.widgets.push(action.widget);
+      return true;
+  }
+});
+
+// a couple of action creators
+var updateWidgetName = function (name) {
+  sf.dispatcher.dispatch({
+    type: 'UPDATE_WIDGET_NAME',
+    widgetName: name
+  });
+};
+var addWidget = function (name) {
+  sf.dispatcher.dispatch({
+    type: 'ADD_WIDGET',
+    widget: {
+      id: Math.floor(Math.random() * 100000000) + 1,
+      name: name,
+      price: (Math.random() * 100).toFixed(2),
+      stock: 10000
+    }
+  });
+};
+
+// component to render a list of widgets
+var WidgetList = function (props) {
+  return el('div', { style: { 'color': 'gray' } },
+    props.widgets.map(function (widget, index) {
+      return el('div', {
+        key: widget.id
+      },
+        widget.name,
+        ': $',
+        widget.price
+      );
+    })
+  );
+};
+
+// top-level component
+var App = function (props) {
+  return el('div', null,
+    el('h4', null, 'SimpleFlux Test Page'),
+    el('input', {
+      value: props.widgetName,
+      onChange: function (event) {
+        updateWidgetName(event.target.value);
+      }
+    }),
+    el('button', {
+      onClick: function () {
+        addWidget(props.widgetName);
+      }
+    }, 'Add'),
+    el(WidgetList, { widgets: props.widgets })
+  );
+};
+
+// global render function
+var render = function () {
+  ReactDOM.render(
+    el(App, myStore.getState()), 
+    document.getElementById('react-mount')
+  );
+};
+
+// subscribe to store
+myStore.subscribe(render);
+
+// go
+render();
+
+    </script>
+  </body>
+</html>
