@@ -18,14 +18,19 @@ var el = React.createElement;
 // my store :)
 var myStore = sf.createStore({
   widgets: [],
-  widgetName: ''
+  widgetNameInput: ''
 }, function (state, action) {
   switch (action.type) {
     case 'UPDATE_WIDGET_NAME':
-      state.widgetName = action.widgetName;
+      state.widgetNameInput = action.name;
       return true;
     case 'ADD_WIDGET':
-      state.widgets.push(action.widget);
+      state.widgets.push({
+        id: Math.floor(Math.random() * 100000000) + 1,
+        name: action.name,
+        price: (Math.random() * 100).toFixed(2),
+        stock: 10000
+      });
       return true;
   }
 });
@@ -34,18 +39,13 @@ var myStore = sf.createStore({
 var updateWidgetName = function (name) {
   sf.dispatcher.dispatch({
     type: 'UPDATE_WIDGET_NAME',
-    widgetName: name
+    name: name
   });
 };
 var addWidget = function (name) {
   sf.dispatcher.dispatch({
     type: 'ADD_WIDGET',
-    widget: {
-      id: Math.floor(Math.random() * 100000000) + 1,
-      name: name,
-      price: (Math.random() * 100).toFixed(2),
-      stock: 10000
-    }
+    name: name
   });
 };
 
@@ -69,14 +69,14 @@ var App = function (props) {
   return el('div', null,
     el('h4', null, 'SimpleFlux Test Page'),
     el('input', {
-      value: props.widgetName,
+      value: props.widgetNameInput,
       onChange: function (event) {
         updateWidgetName(event.target.value);
       }
     }),
     el('button', {
       onClick: function () {
-        addWidget(props.widgetName);
+        addWidget(props.widgetNameInput);
       }
     }, 'Add'),
     el(WidgetList, { widgets: props.widgets })
