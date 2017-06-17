@@ -2,10 +2,10 @@
 A simple Flux implementation without any build requirements or dependencies. This is easier to learn, but for real projects you should consider [Redux](http://redux.js.org/) instead!
 
 ## Getting Started
-This library is just an `sf` module with two properties: `dispatcher` is based on the [Flux reference dispatcher](https://github.com/facebook/flux/blob/master/src/Dispatcher.js), and `createStore` is a helper function for creating simple stores that work with this dispatcher.
+This library is just an `sf` module with some properties: `dispatch` and other methods are based on the [Flux reference dispatcher](https://github.com/facebook/flux/blob/master/src/Dispatcher.js), and `createStore` is a helper function for creating simple stores that will receive dispatched actions.
 
 ## Stores
-The output of a call to `sf.createStore()` is an object that has `.subscribe()`, `.unsubscribe()`, and `.getState()` functions. Subscribe your render function to these stores, and then pass your action objects to `sf.dispatcher.dispatch()`.
+The output of a call to `sf.createStore()` is an object that has `.subscribe()`, `.unsubscribe()`, and `.getState()` functions. Subscribe your render function to these stores, and then pass your action objects to `sf.dispatch()`.
 
 ## initialState
 The first argument to `sf.createStore()` is an object with the initial values of your state variables. This object will be passed into the `actionHandler` along with every `action` that is dispatched. By default changes are saved by mutating this object, and you are responsible for adding any immutable behavior. You can assign immutable references to any property on `initialState`, or make `initialState` an array of historical state objects.
