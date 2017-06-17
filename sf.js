@@ -178,7 +178,7 @@ var sf = (function () {
       // Run any callbacks subscribed to this store if we should update
       if (shouldUpdate) {
         for (var i = 0; i < _updateCallbacks.length; i++) {
-          _updateCallbacks[i]();
+          _updateCallbacks[i](_state);
         }
       }
 
