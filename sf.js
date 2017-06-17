@@ -170,7 +170,7 @@ var sf = (function () {
     /**
      * Register action handler with the `dispatcher` and save the `dispatchToken`
      */
-    var dispatchToken = dispatcher.register(function (action) {
+    var dispatchToken = register(function (action) {
 
       // The actionHandler function should Return `true` to update
       var shouldUpdate = actionHandler(_state, action);
