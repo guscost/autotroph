@@ -7,149 +7,136 @@
 var sf = (function () {
   'use strict';
 
+/**
+ * dispatcher stuff
+ * Action Creators will run `sf.dispatch({ ... });`
+ * Stores created with the `sf.createStore` function below will automatically register
+ */
+
+  var _lastID = 1;
+  var _prefix = 'ID_';
+
+  var _callbacks = {};
+  var _isPending = {};
+  var _isHandled = {};
+  var _isDispatching = false;
+  var _pendingPayload = null;
+
   /**
-   * dispatcher module
-   * Action Creators will run `sf.dispatcher.dispatch({ ... });`
-   * Stores created with the `sf.createStore` function below will automatically register
+   * Register a callback to be invoked with every dispatched payload. Returns
+   * a token that can be used with `waitFor()`.
    */
-  var dispatcher = function () {
+  var register = function register(callback) {
+    if (this._isDispatching) {
+      throw 'Dispatcher.register(...): Cannot register in the middle of a dispatch.';
+    }
+    var id = _prefix + _lastID++;
+    _callbacks[id] = callback;
+    return id;
+  };
 
-    var _lastID = 1;
-    var _prefix = 'ID_';
-      
-    var _callbacks = {};
-    var _isPending = {};
-    var _isHandled = {};
-    var _isDispatching = false;
-    var _pendingPayload = null;
+  /**
+   * Remove a callback based on its token.
+   */
+  var unregister = function unregister(id) {
+    if (this._isDispatching) {
+      throw 'Dispatcher.unregister(...): Cannot unregister in the middle of a dispatch.';
+    }
+    if (!_callbacks[id]) {
+      throw 'Dispatcher.unregister(...): `' + id + '` does not map to a registered callback.';
+    }
+    delete _callbacks[id];
+  };
 
-    /**
-     * Register a callback to be invoked with every dispatched payload. Returns
-     * a token that can be used with `waitFor()`.
-     */
-    var register = function register(callback) {
-      if (this._isDispatching) {
-        throw 'Dispatcher.register(...): Cannot register in the middle of a dispatch.';
-      }
-      var id = _prefix + _lastID++;
-      _callbacks[id] = callback;
-      return id;
-    };
-
-    /**
-     * Remove a callback based on its token.
-     */
-    var unregister = function unregister(id) {
-      if (this._isDispatching) {
-        throw 'Dispatcher.unregister(...): Cannot unregister in the middle of a dispatch.';
+  /**
+   * Wait for the callbacks specified to be invoked before continuing execution
+   * of the current callback. This method should only be used by a callback in
+   * response to a dispatched payload.
+   */
+  var waitFor = function waitFor(ids) {
+    if (!_isDispatching) {
+      throw 'Dispatcher.waitFor(...): Must be invoked while dispatching.';
+    }
+    for (var ii = 0; ii < ids.length; ii++) {
+      var id = ids[ii];
+      if (_isPending[id]) {
+        if (!_isHandled[id]) {
+          throw 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `' + id + '`.';
+        }
+        continue;
       }
       if (!_callbacks[id]) {
-        throw 'Dispatcher.unregister(...): `' + id + '` does not map to a registered callback.';
+        throw 'Dispatcher.waitFor(...): `' + id + '` does not map to a registered callback.';
       }
-      delete _callbacks[id];
-    };
+      _invokeCallback(id);
+    }
+  };
 
-    /**
-     * Wait for the callbacks specified to be invoked before continuing execution
-     * of the current callback. This method should only be used by a callback in
-     * response to a dispatched payload.
-     */
-    var waitFor = function waitFor(ids) {
-      if (!_isDispatching) {
-        throw 'Dispatcher.waitFor(...): Must be invoked while dispatching.';
-      }
-      for (var ii = 0; ii < ids.length; ii++) {
-        var id = ids[ii];
+  /**
+   * Dispatch a payload to all registered callbacks.
+   */
+  var dispatch = function dispatch(payload) {
+    if (_isDispatching) {
+      throw 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.';
+    }
+    _startDispatching(payload);
+    try {
+      for (var id in _callbacks) {
         if (_isPending[id]) {
-          if (!_isHandled[id]) {
-            throw 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `' + id + '`.';
-          }
           continue;
-        }
-        if (!_callbacks[id]) {
-          throw 'Dispatcher.waitFor(...): `' + id + '` does not map to a registered callback.';
         }
         _invokeCallback(id);
       }
-    };
+    } finally {
+      _stopDispatching();
+    }
+  };
 
-    /**
-     * Dispatch a payload to all registered callbacks.
-     */
-    var dispatch = function dispatch(payload) {
-      if (_isDispatching) {
-        throw 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.';
-      }
-      _startDispatching(payload);
-      try {
-        for (var id in _callbacks) {
-          if (_isPending[id]) {
-            continue;
-          }
-          _invokeCallback(id);
-        }
-      } finally {
-        _stopDispatching();
-      }
-    };
+  /**
+   * Is this Dispatcher currently dispatching?
+   */
+  var isDispatching = function isDispatching() {
+    return _isDispatching;
+  };
 
-    /**
-     * Is this Dispatcher currently dispatching?
-     */
-    var isDispatching = function isDispatching() {
-      return _isDispatching;
-    };
+  /**
+   * Call the callback stored with the given id. Also do some internal
+   * bookkeeping.
+   */
+  var _invokeCallback = function _invokeCallback(id) {
+    _isPending[id] = true;
+    _callbacks[id](_pendingPayload);
+    _isHandled[id] = true;
+  };
 
-    /**
-     * Call the callback stored with the given id. Also do some internal
-     * bookkeeping.
-     */
-    var _invokeCallback = function _invokeCallback(id) {
-      _isPending[id] = true;
-      _callbacks[id](_pendingPayload);
-      _isHandled[id] = true;
-    };
+  /**
+   * Set up bookkeeping needed when dispatching.
+   */
+  var _startDispatching = function _startDispatching(payload) {
+    for (var id in _callbacks) {
+      _isPending[id] = false;
+      _isHandled[id] = false;
+    }
+    _pendingPayload = payload;
+    _isDispatching = true;
+  };
 
-    /**
-     * Set up bookkeeping needed when dispatching.
-     */
-    var _startDispatching = function _startDispatching(payload) {
-      for (var id in _callbacks) {
-        _isPending[id] = false;
-        _isHandled[id] = false;
-      }
-      _pendingPayload = payload;
-      _isDispatching = true;
-    };
+  /**
+   * Clear bookkeeping used for dispatching.
+   */
+  var _stopDispatching = function _stopDispatching() {
+    _pendingPayload = null;
+    _isDispatching = false;
+  };
 
-    /**
-     * Clear bookkeeping used for dispatching.
-     */
-    var _stopDispatching = function _stopDispatching() {
-      _pendingPayload = null;
-      _isDispatching = false;
-    };
-
-    /**
-     * Warn if an action has a falsy type (usually because a constant does not exist)
-     */
-    var _warnForActionType = function _warnForActionType(action) {
-      if (!action.type) {
-        console.warn('Warning: Dispatched action has type: ' + action.type);
-      }
-    };
-
-    /**
-     * `dispatcher API
-     */
-    return {
-      register: register,
-      unregister: unregister,
-      waitFor: waitFor,
-      dispatch: dispatch,
-      isDispatching: isDispatching
-    };
-  }();
+  /**
+   * Warn if an action has a falsy type (usually because a constant does not exist)
+   */
+  var _warnForActionType = function _warnForActionType(action) {
+    if (!action.type) {
+      console.warn('Warning: Dispatched action has type: ' + action.type);
+    }
+  };
 
 
   /**
@@ -213,8 +200,11 @@ var sf = (function () {
    * Public API
    */
   return {
-    dispatcher: dispatcher,
+    register: register,
+    unregister: unregister,
+    waitFor: waitFor,
+    dispatch: dispatch,
+    isDispatching: isDispatching,
     createStore: createStore
-  }  
-  
+  }
 })();
