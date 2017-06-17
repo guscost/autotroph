@@ -27,7 +27,7 @@ var sf = (function () {
    * a token that can be used with `waitFor()`.
    */
   var register = function register(callback) {
-    if (this._isDispatching) {
+    if (_isDispatching) {
       throw 'Dispatcher.register(...): Cannot register in the middle of a dispatch.';
     }
     var id = _prefix + _lastID++;
@@ -39,7 +39,7 @@ var sf = (function () {
    * Remove a callback based on its token.
    */
   var unregister = function unregister(id) {
-    if (this._isDispatching) {
+    if (_isDispatching) {
       throw 'Dispatcher.unregister(...): Cannot unregister in the middle of a dispatch.';
     }
     if (!_callbacks[id]) {
