@@ -7,11 +7,11 @@
 var sf = (function () {
   'use strict';
 
-/**
- * dispatcher stuff
- * Action Creators will run `sf.dispatch({ ... });`
- * Stores created with the `sf.createStore` function below will automatically register
- */
+  /**
+   * dispatcher stuff
+   * Action Creators will run `sf.dispatch({ ... });`
+   * Stores created with the `sf.createStore` function below will automatically register
+   */
 
   var _lastID = 1;
   var _prefix = 'ID_';
