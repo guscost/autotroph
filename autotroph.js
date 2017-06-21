@@ -214,4 +214,4 @@
     isDispatching: isDispatching,
     createStore: createStore
   }
-})();
+}));
