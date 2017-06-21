@@ -1,10 +1,17 @@
 /**
- * SimpleFlux ES5 Flux library version 1.0
- * Copyright 2016 Gus Cost, MIT License
- * Based on the dispatcher implementation from the Flux reference project:
- * https://github.com/facebook/flux
+ * autotroph version 1.1.0
+ * MIT License
+ * Copyright 2017 Gus Cost
  */
-var sf = (function () {
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.sf = factory();
+  }
+}(this, function () {
   'use strict';
 
   /**
