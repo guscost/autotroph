@@ -1,5 +1,5 @@
 /**
- * autotroph version 1.1.0
+ * autotroph version 1.1.1
  * MIT License
  * Copyright 2017 Gus Cost
  */
