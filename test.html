@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>SimpleFlux Test Page</title>
+    <title>autotroph</title>
   </head>
   <body>
     <div id="page" style="width: 960px; margin: 0 auto; font-family: sans-serif;">
@@ -10,13 +10,13 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.min.js"></script>
-    <script src="https://rawgit.com/guscost/simple-flux/master/sf.js"></script>
+    <script src="https://rawgit.com/guscost/autotroph/master/autotroph.js"></script>
     <script>
 
 var el = React.createElement;
 
 // my store :)
-var myStore = sf.createStore({
+var myStore = autotroph.createStore({
   widgets: [],
   widgetNameInput: ''
 }, function (state, action) {
@@ -37,13 +37,13 @@ var myStore = sf.createStore({
 
 // a couple of action creators
 var updateWidgetName = function (name) {
-  sf.dispatcher.dispatch({
+  autotroph.dispatch({
     type: 'UPDATE_WIDGET_NAME',
     name: name
   });
 };
 var addWidget = function (name) {
-  sf.dispatcher.dispatch({
+  autotroph.dispatch({
     type: 'ADD_WIDGET',
     name: name
   });

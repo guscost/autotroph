@@ -9,15 +9,15 @@
   } else if (typeof module === 'object' && module.exports) {
     module.exports = factory();
   } else {
-    root.sf = factory();
+    root.autotroph = factory();
   }
 }(this, function () {
   'use strict';
 
   /**
    * dispatcher stuff
-   * Action Creators will run `sf.dispatch({ ... });`
-   * Stores created with the `sf.createStore` function below will automatically register
+   * Action Creators will run `autotroph.dispatch({ ... });`
+   * Stores created with the `autotroph.createStore` function below will automatically register
    */
 
   var _lastID = 1;
